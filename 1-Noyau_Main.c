@@ -11,6 +11,7 @@
 #include "API.h"
 #include "convert_keyboard.h"
 #include "Pagination.h"
+#include "Allocation_Pages.h"
 
 
 
@@ -63,58 +64,41 @@ void OS_Start(T_BOOT_INFO* P_Info)
 
 
 //------------------------------------------------------------------------------
-void OS_Main()
-{
-  Affiche_Message(">>>Initialisation de la Pile (ESP) : ","OK");
+void OS_Main() {
+	Affiche_Message(">>>Initialisation de la Pile (ESP) : ", "OK");
 
-  Initialisation_IDT();
+	Initialisation_IDT();
 	Affiche_Message(">>>Initialisation de la IDT : ", "OK");
 
 	Initialisation_Pagination();
 	Affiche_Message(">>>Initialisation de la pagination : ", "OK");
 
-  Inititialisation_8259A();
-  Affiche_Message(">>>Initialisation du PIC 8259A : ","OK");
+	Inititialisation_8259A();
+	Affiche_Message(">>>Initialisation du PIC 8259A : ", "OK");
 
-  Initialisation_8253(1193);
-  Affiche_Message(">>>Initialisation du controleur 8253 : ","OK");
+	Initialisation_8253(1193);
+	Affiche_Message(">>>Initialisation du controleur 8253 : ", "OK");
 
-  AUTORISE_INTERRUPTION;
+	AUTORISE_INTERRUPTION;
 
-//   Affiche_Chaine("Appuyez sur une touche pour remplir l'ecran via un appel systeme \n");
-//   Attendre_Touche_Relache();
-//   
-//   
-//   
-//   API_clrscr();
-//   API_puts("Voici un texte \n", 6);
-//
-//
-//   API_puts("Appuyez sur une touche pour terminer \n", 5);
-//   Attendre_Touche_Relache();
+	//Allocation de 4 pages à partir de l'adresse virtuelle 1 Go
+	Allouer_Pages(ADRESSE_BASE_REPERTOIRE_TABLES_DE_PAGES_OS, 0x40000000, 4);
 
-   Affiche_Chaine("Appuyez sur une touche pour remplir l'ecran via un appel systeme \n");
-   Attendre_Touche_Relache();
+	Affiche_Chaine("Ecriture dans 0x40000000");
+	UINT32* Data = (UINT32*) 0x40000000;
+	*Data = 0x5555; //OK !!!
 
+	Affiche_Chaine("\nAppyez sur une touche pour ecrire a une adresse 2Go\n");
+	Attendre_Touche_Relache();
 
+	Affiche_Chaine("Ecriture dans 0x80000000");
 
-	API_clrscr();
+	UINT32* Danger = (UINT32*) 0x80000000;
+	*Danger = 0x5555; //cela va générer une exception !!!
 
-	Affiche_Chaine_Caractere('$', 100);
+	Affiche_Chaine("FIN !!!!");
 
-	API_fill('*', 12);
-	//API_puts("Voici un texte \n", BLANC);
-
-
-	//API_puts("Appuyez sur une touche pour terminer \n", BLEU);
-   Attendre_Touche_Relache();
-
-
-
-
-   Affiche_Chaine("FIN");
-   while(1);
-
+	while (1);
  }
 
 
